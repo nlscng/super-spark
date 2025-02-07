@@ -2,7 +2,7 @@ ThisBuild / version := "0.1.0-SNAPSHOT"
 
 ThisBuild / scalaVersion := "2.12.18"
 
-javacOptions ++= Seq("-source", "11", "-target", "11")  // Use Java 11 for compilation
+//javacOptions ++= Seq("-source", "11", "-target", "11")  // Use Java 11 for compilation
 
 lazy val root = (project in file("."))
   .settings(
