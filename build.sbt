@@ -28,4 +28,8 @@ libraryDependencies ++= Seq(
   "org.apache.logging.log4j" % "log4j-core" % log4jVersion,
   // postgres for DB connectivity
   "org.postgresql" % "postgresql" % postgresVersion
+
+  // to sidestep running spark local on a windows file system,
+  // see: https://stackoverflow.com/questions/73503205/why-all-these-hadoop-home-and-winutils-errors-with-spark-on-windows-if-hadoop
+//  "com.globalmentor" % "hadoop-bare-naked-local-fs" % "0.1.0"
 )
