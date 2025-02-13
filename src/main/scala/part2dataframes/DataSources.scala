@@ -3,7 +3,7 @@ package part2dataframes
 //import com.globalmentor.apache.hadoop.fs.BareLocalFileSystem
 import org.apache.commons.io.FileSystem
 import org.apache.spark.sql.{SaveMode, SparkSession}
-import org.apache.spark.sql.types.{DoubleType, IntegerType, StringType, StructField, StructType}
+import org.apache.spark.sql.types.{DateType, DoubleType, IntegerType, StringType, StructField, StructType}
 import part2dataframes.DataframeBasics.spark
 
 object DataSources extends App {
@@ -24,7 +24,7 @@ object DataSources extends App {
     StructField("Horsepower", IntegerType),
     StructField("Weight_in_lbs", IntegerType),
     StructField("Acceleration", DoubleType),
-    StructField("Year", StringType),
+    StructField("Year", DateType),
     StructField("Origin", StringType)
   ))
 
@@ -64,4 +64,39 @@ object DataSources extends App {
     .format("json")
     .mode(SaveMode.Overwrite)
     .save("src/main/resources/data/cars_dupe.json")
+
+
+  /**
+   * Part 2
+   */
+
+  // JSON flags
+  spark.read
+    .option("dateFormat", "YYYY-MM-dd") // dateFormat only works WITH a schema; if spark fails parsing, will put null
+    .option("allowSingleQuotes", "true")
+    .option("compression", "uncompressed") // bzip2, gzip, lz4, snappy, deflate
+    .json("src/main/resources/data/cars.json")
+
+  // CSV flags
+  val stockSchema = StructType(Array(
+    StructField("symbol", StringType),
+    StructField("date", DateType),
+    StructField("price", DoubleType)
+  ))
+  spark.read
+    .schema(stockSchema)
+    .option("dateFormat", "MMM dd YYYY")
+    .option("header", "true") // does data contain header row
+    .option("sep", ",")
+    .option("nullValue", "") // IMPORTANT as there are no null values in csv, so this says to treat empty as null
+    .csv("src/main/resources/data/stock.csv")
+
+  // Parquet, a compressed binary format, also the default format for spark data frames
+  carsDF.write
+    .mode(SaveMode.Overwrite)
+//    .parquet("src/main/resources/data/cars.parquet")
+    .save("src/main/resources/data/cars.parquet")  // same as calling parquet("src/...")
+
+  // Text files
+  
 }
