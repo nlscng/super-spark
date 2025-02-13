@@ -37,7 +37,7 @@ object DataSources extends App {
   private val carsDF = spark.read
     .format("json")
     .schema(carSchema) // enforce schema with a defined
-    .option("mode", "failFast") // other modes: dropMalformed, permissive (default)
+    .option("mode", "permissive") // mode options: failFast, dropMalformed, permissive (default)
     .option("path", "src/main/resources/data/cars.json")
     .load()
 
