@@ -78,25 +78,31 @@ object DataSources extends App {
     .json("src/main/resources/data/cars.json")
 
   // CSV flags
-  val stockSchema = StructType(Array(
+  private val stocksSchema = StructType(Array(
     StructField("symbol", StringType),
     StructField("date", DateType),
     StructField("price", DoubleType)
   ))
   spark.read
-    .schema(stockSchema)
+    .schema(stocksSchema)
     .option("dateFormat", "MMM dd YYYY")
     .option("header", "true") // does data contain header row
     .option("sep", ",")
     .option("nullValue", "") // IMPORTANT as there are no null values in csv, so this says to treat empty as null
-    .csv("src/main/resources/data/stock.csv")
+    .csv("src/main/resources/data/stocks.csv")
 
   // Parquet, a compressed binary format, also the default format for spark data frames
   carsDF.write
     .mode(SaveMode.Overwrite)
 //    .parquet("src/main/resources/data/cars.parquet")
-    .save("src/main/resources/data/cars.parquet")  // same as calling parquet("src/...")
+    .save("src/main/resources/data/cars.parquet")  // same as calling parquet since parquet is default format
 
   // Text files
-  
+  spark.read
+    .text("src/main/resources/data/sampleTextFile.txt")
+    .show()
+
+
+  // Reading from a remote DB
+
 }
