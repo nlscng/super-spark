@@ -104,5 +104,21 @@ object DataSources extends App {
 
 
   // Reading from a remote DB
+  val employeesDF = spark.read
+    .format("jdbc")
+    .option("driver", "org.postgresql.Driver")
+    .option("url", "jdbc:postgresql://localhost:5432/rtjvm")
+    .option("user", "docker")
+    .option("password", "docker")
+    .option("dbtable", "public.employees")
+    .load()
+  employeesDF.show()
 
+  /**
+   * Exercise:
+   * Read movies.json, then write it as:
+   *  - tab seperated values file
+   *  - snappy parquet
+   *  - table "public.movies" in the postgres db
+   */
 }
