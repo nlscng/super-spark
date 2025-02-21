@@ -103,14 +103,19 @@ object DataSources extends App {
     .show()
 
 
-  // Reading from a remote DB
+  // Reading from a remote DB; need to start docker image from spark-essential repo and have local docker engine running
+  val driver = "org.postgresql.Driver"
+  val url = "jdbc:postgresql://localhost:5432/rtjvm"
+  val user = "docker"
+  val tableName = "public.employees"
+  val password = "docker"
   val employeesDF = spark.read
     .format("jdbc")
-    .option("driver", "org.postgresql.Driver")
-    .option("url", "jdbc:postgresql://localhost:5432/rtjvm")
-    .option("user", "docker")
-    .option("password", "docker")
-    .option("dbtable", "public.employees")
+    .option("driver", driver)
+    .option("url", url)
+    .option("user", user)
+    .option("password", password)
+    .option("dbtable", tableName)
     .load()
   employeesDF.show()
 
@@ -121,4 +126,31 @@ object DataSources extends App {
    *  - snappy parquet
    *  - table "public.movies" in the postgres db
    */
+
+  // TSV
+  val moviesDF = spark.read
+    .json("src/main/resources/data/movies.json")
+  moviesDF.write
+    .format("csv")
+    .option("header", "true")
+    .option("sep", "\t")
+    .mode(SaveMode.Overwrite)
+    .save("src/main/resources/data/movies.csv")
+
+  // parquet
+  moviesDF.write
+    .mode(SaveMode.Overwrite)
+    .save("src/main/resources/data/movies.parquet")
+
+  // save to DB
+  val toTable = "public.movies"
+  moviesDF.write
+    .format("jdbc")
+    .option("driver", driver)
+    .option("url", url)
+    .option("user", user)
+    .option("password", password)
+    .option("dbtable", toTable)
+    .save()
+
 }
