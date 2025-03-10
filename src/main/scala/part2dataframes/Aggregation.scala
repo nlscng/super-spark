@@ -3,6 +3,12 @@ package part2dataframes
 import org.apache.spark.sql.{SparkSession, functions}
 import org.apache.spark.sql.functions._
 
+/**
+ * Aggregations done in this exercise are WIDE transformations,
+ * one or more input partitions => one or more partitions
+ *
+ * Aka there's a lot of shuffling, and shuffling can be costly.
+ */
 object Aggregation extends App {
   val spark = SparkSession.builder()
     .appName("Aggregation and Grouping")
@@ -63,6 +69,37 @@ object Aggregation extends App {
       count("*").as("Num_Movies"),
       avg("IMDB_Rating").as("Avg_Rating")
     )
+    .orderBy(col("Avg_Rating"))
   aggregationsByGenreDF.show()
 
+
+  /**
+   * Exercise:
+   * 1. Sum up all profits of all movies
+   * 2. Count how many distinct directors we have
+   * 3. Show means and std for US gross revenue
+   * 4. Compute the average IMDB ratings and the average US gross revenue PER director
+   */
+  // sum all profits
+  moviesDF.select((col("US_Gross") + col("Worldwide_Gross") + col("US_DVD_Sales")).as("Total_Gross"))
+    .select(sum("Total_Gross"))
+    .show() // 139 trillion and some
+
+  // Count distinct directors
+  moviesDF.select(countDistinct(col("Director"))).show() // 550 distinct directors
+
+  // means and std
+  moviesDF.select(
+    mean(col("US_Gross")),
+    stddev(col("US_Gross"))
+  ).show()
+
+  // Avg of imdb ratings and avg of US gross PER director
+  moviesDF.groupBy("Director")
+    .agg(
+      avg("IMDB_Rating").as("Avg_Rating"),
+      sum("US_Gross").as("Total_US_Gross")
+    )
+    .orderBy(col("Avg_Rating").desc_nulls_last)
+    .show()
 }
