@@ -1,7 +1,8 @@
 package part2dataframes
 
 import org.apache.spark.sql.SparkSession
-import org.apache.spark.sql.functions.{expr, max, col}
+import org.apache.spark.sql.functions.{col, expr, max}
+import part2dataframes.DataSources.spark
 
 
 object Joins extends App {
@@ -65,4 +66,36 @@ object Joins extends App {
   // option 4 - use complex types, more details in later chapters
   guitarPlayersDF.join(guitarsDF.withColumnRenamed("id", "guitarId"), expr("array_contains(guitars, guitarId)"))
 
+  /**
+   * Exercise
+   * - show all employees and their max salary
+   * - show all employees who were never managers
+   * - find job titles of the best paid 10 employees
+   */
+
+  val driver = "org.postgresql.Driver"
+  val url = "jdbc:postgresql://localhost:5432/rtjvm"
+  val user = "docker"
+  val tableName = "public.employees"
+  val password = "docker"
+
+  private def readTable(tableName: String) =
+   spark.read
+    .format("jdbc")
+    .option("driver", driver)
+    .option("url", url)
+    .option("user", user)
+    .option("password", password)
+    .option("dbtable", tableName)
+    .load()
+
+  val employeeDF = readTable("employees")
+  val salaryDF = readTable("salaries")
+  val managerDF = readTable("dept_manager")
+  val titleDF = readTable("titles")
+
+  // 1
+  val maxSalaryEmployeeDF = salaryDF.groupBy("emp_no").max("salary")
+  val employeeSalaryDF = employeeDF.join(maxSalaryEmployeeDF, "emp_no")
+  employeeSalaryDF.show()
 }
