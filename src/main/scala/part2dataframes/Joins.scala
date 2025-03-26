@@ -2,7 +2,7 @@ package part2dataframes
 
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.functions.{col, expr, max}
-import part2dataframes.DataSources.spark
+import part2dataframes.DataSources.{spark}
 
 
 object Joins extends App {
@@ -89,13 +89,24 @@ object Joins extends App {
     .option("dbtable", tableName)
     .load()
 
-  val employeeDF = readTable("employees")
+  val employeesDF = readTable("employees")
   val salaryDF = readTable("salaries")
   val managerDF = readTable("dept_manager")
   val titleDF = readTable("titles")
 
   // 1
-  val maxSalaryEmployeeDF = salaryDF.groupBy("emp_no").max("salary")
-  val employeeSalaryDF = employeeDF.join(maxSalaryEmployeeDF, "emp_no")
+  val maxSalaryEmployeeDF = salaryDF.groupBy("emp_no").agg(max("salary").as("maxSalary"))
+  val employeeSalaryDF = employeesDF.join(maxSalaryEmployeeDF, "emp_no")
   employeeSalaryDF.show()
+
+  // 2
+  val employeeNeverManagerDF = employeesDF.join(
+    managerDF, employeesDF.col("emp_no") === managerDF.col("emp_no"), "left_anti")
+  employeeNeverManagerDF.show()
+
+  //
+  val mostRecentJobTitlesDF = titleDF.groupBy("emp_no", "title").agg(max("to_date"))
+  val bestPaidEmployeeDF = employeeSalaryDF.orderBy(col("maxSalary").desc).limit(10)
+  val bestPaidJobsDF = bestPaidEmployeeDF.join(mostRecentJobTitlesDF, "emp_no")
+  bestPaidJobsDF.show()
 }
