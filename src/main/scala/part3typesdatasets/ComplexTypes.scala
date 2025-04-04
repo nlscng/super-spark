@@ -20,9 +20,32 @@ object ComplexTypes extends App {
   // Dates
 
   // convert a string column to a date column
-  moviesDF.select(col("Title"), to_date(col("Release_Date"), "dd-MMM-yy").as("Actual_Release"))
+  val moviesWithReleaseDAtesDF = moviesDF.select(col("Title"), to_date(col("Release_Date"), "dd-MMM-yy").as("Actual_Release"))
+
+  moviesWithReleaseDAtesDF
     .withColumn("Today", current_date())
     .withColumn("Right_Now", current_timestamp())
-    .withColumn("Movie_Age", datediff(col("Today"), col("Actual_Release")) / 365)
-    .show()
+    .withColumn("Movie_Age", datediff(col("Today"), col("Actual_Release")) / 365) // date_add, date_sub
+
+  // dates that can't be parsed with our selected parser would return null,
+  // but the dates can still potentially be there, just a different format.
+  moviesWithReleaseDAtesDF.select("*").where(col("Actual_Release").isNull).show()
+
+  /**
+   * Exercise
+   *  1. How to deal with multiple date format?
+   *  2. Read the stocks DF
+   */
+
+  // 1 - parse DF multiple times, then union the small DFs
+
+  // 2
+  val stocksDF = spark.read.format("csv")
+    .option("inferSchema", "true")
+    .option("header", "true")
+    .load("src/main/resources/data/stocks.csv")
+
+  val stocksDFWithDatesDF = stocksDF.withColumn("actual_date", to_date(col("date"), "MMM dd yyyy"))
+
+  stocksDFWithDatesDF.show()
 }
