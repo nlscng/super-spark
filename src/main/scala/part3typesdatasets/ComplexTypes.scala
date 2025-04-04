@@ -48,4 +48,30 @@ object ComplexTypes extends App {
   val stocksDFWithDatesDF = stocksDF.withColumn("actual_date", to_date(col("date"), "MMM dd yyyy"))
 
   stocksDFWithDatesDF.show()
+
+  // structures, tuples in tables essentially
+  // 1 - with col operators
+  val movieWorldWideProfitDF = moviesDF.select(col("Title"), struct(col("US_Gross"), col("Worldwide_Gross")).as("Profit"))
+    movieWorldWideProfitDF.show()
+
+  val movieUSProfitDF = movieWorldWideProfitDF
+    .select(col("Title"), col("Profit").getField("US_Gross").as("US_Profit"))
+
+  movieUSProfitDF.show()
+
+  // 2 - with expression strings
+  moviesDF
+    .selectExpr("Title", "(US_Gross, Worldwide_Gross) as Profit")
+    .selectExpr("Title", "Profit.US_Gross")
+
+  // Arrays
+
+  val movieWithWords = moviesDF.select(col("Title"), split(col("Title"), " |,").as("Title_Words")) // returns an array of string
+
+  movieWithWords.select(
+    col("Title"),
+    expr("Title_Words[0]"),
+    size(col("Title_Words")),
+    array_contains(col("Title_Words"), "Love")
+  ).show()
 }
