@@ -41,4 +41,25 @@ object ManagingNulls extends App {
 
   println(s"Movies with null IMDB or RT rating replaced with 0:")
   moviesWithRatingNullDefault.show()
+
+  // another way to fill with default by providing a map. fill method is
+  // heavily overloaded
+  println(s"Movies with fill from a map:")
+  moviesDF.na.fill(Map(
+    "IMDB_Rating" -> 0,
+    "Rotten_Tomatoes_Rating" -> 10,
+    "Director" -> "Unknown"
+  )).show()
+
+  // complex operations
+  println(s"Complex operations using Expr:")
+  moviesDF.selectExpr(
+    "Title",
+    "IMDB_Rating",
+    "Rotten_Tomatoes_Rating",
+    "ifnull(Rotten_Tomatoes_Rating, IMDB_Rating * 10) as ifnull", // same as coalesce
+    "nvl(Rotten_Tomatoes_Rating, IMDB_Rating * 10) as nvl", // same as last line
+    "nullif(Rotten_Tomatoes_Rating, IMDB_Rating * 10) as nullif", // returns null if the two values are EQUAL, else returns first value
+    "nvl2(Rotten_Tomatoes_Rating, IMDB_Rating * 10, 0.0) as nvl2" // if (first != null) second else third
+  ).show()
 }
