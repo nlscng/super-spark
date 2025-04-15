@@ -1,5 +1,7 @@
 package part3typesdatasets
 
+import org.apache.spark.sql.functions.col
+import org.apache.spark.sql.types.DateType
 import org.apache.spark.sql.{Dataset, Encoders, SparkSession}
 
 import java.sql.Date
@@ -27,11 +29,11 @@ object DataSets extends App {
   // 1 - define case class
   case class Car(
                 Name: String,
-                Miles_per_Gallon: Double,
+                Miles_per_Gallon: Option[Double], // Option to allow null, or make null-able
                 Cylinders: Long,
                 Displacement: Double,
-                Horsepower: Long,
-                Weight_in_lobs: Long,
+                Horsepower: Option[Long],
+                Weight_in_lbs: Long,
                 Acceleration: Double,
                 Year: Date,
                 Origin: String
@@ -41,7 +43,7 @@ object DataSets extends App {
   def readDF(filename: String) = {
     val df = spark.read
       .option("inferSchema", "true")
-      .json(s"src/main/resources/$filename")
+      .json(s"src/main/resources/data/$filename")
     df
   }
 
@@ -56,7 +58,20 @@ object DataSets extends App {
 
   import spark.implicits._
   val carsDF = readDF("cars.json")
+    .withColumn("Year", col("Year").cast(DateType))
   val carsDS = carsDF.as[Car]
 
+  numbersDS.filter(_ < 100).show()
 
+  // map, flatMap, fold, reduce, for comps, functional operators work with dataset
+  val carNamesDS = carsDS.map(car => car.Name.toUpperCase())
+  carNamesDS.show()
+
+
+  // Dataframe vs dataset
+  // performance vs type safety
+  // use DF when we need it fast
+  // use DS when we care about type safety (with the cost of dataset actually contains
+  // scala object, spark can't optimize them for performance, so all ops or eval are done
+  // in a row by row basis)
 }
