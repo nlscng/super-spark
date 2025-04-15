@@ -2,7 +2,8 @@ package part3typesdatasets
 
 import org.apache.spark.sql.functions.col
 import org.apache.spark.sql.types.DateType
-import org.apache.spark.sql.{Dataset, Encoders, SparkSession}
+import org.apache.spark.sql.functions.avg
+import org.apache.spark.sql.{DataFrame, Dataset, Encoders, SparkSession}
 
 import java.sql.Date
 
@@ -12,7 +13,7 @@ object DataSets extends App {
     .config("spark.master", "local")
     .getOrCreate()
 
-  val numbersDF = spark.read
+  val numbersDF: DataFrame = spark.read
     .format("csv")
     .option("header", "true")
     .option("inferSchema", "true")
@@ -68,10 +69,33 @@ object DataSets extends App {
   carNamesDS.show()
 
 
-  // Dataframe vs dataset
+  // Dataframe vs dataset:
   // performance vs type safety
   // use DF when we need it fast
   // use DS when we care about type safety (with the cost of dataset actually contains
   // scala object, spark can't optimize them for performance, so all ops or eval are done
   // in a row by row basis)
+
+  /**
+   * Exercise
+   * 1 - count how many cars we have
+   * 2 - count how many cars have horsepower > 140
+   * 3 - average HP for the entire dataset
+   */
+
+  // 1
+  val carsCount = carsDS.count
+  println(s"Total number of cars in this dataset:")
+  println(carsCount)
+
+  // 2. the getOrElse needs an explicit type hint to turn AnyVal to a numerical so the greater sign works
+  println(s"Number of cars with horsepower greater than 140:")
+  println(carsDS.filter(_.Horsepower.getOrElse(0L) > 140))
+
+  // 3
+  println(s"Average HP of the entire dataset of cars:")
+  println(carsDS.map(_.Horsepower.getOrElse(0L)).reduce(_ + _) / carsCount)
+
+  // 3 equivalent
+  carsDS.select(avg(col("Horsepower"))).show()
 }
