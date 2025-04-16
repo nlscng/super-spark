@@ -98,4 +98,14 @@ object DataSets extends App {
 
   // 3 equivalent
   carsDS.select(avg(col("Horsepower"))).show()
+
+  // Joins
+  case class Guitar(id: Int, make: String, model: String, guitarType: String)
+  case class GuitarPlayer(id: Int, name: String, guitars: Seq[Int])
+  case class Band(id: Int, name: String, hometown: String, year: Int)
+
+  val guitarDS = readDF("guitars.json").as[Guitar]
+  val guitarPlayerDS = readDF("guitarPlayers.json").as[GuitarPlayer]
+  val bandDS = readDF("bands.json").as[Band]
+
 }
