@@ -2,7 +2,7 @@ package part3typesdatasets
 
 import org.apache.spark.sql.functions.{array_contains, avg, col}
 import org.apache.spark.sql.types.DateType
-import org.apache.spark.sql.{DataFrame, Dataset, Encoders, SparkSession}
+import org.apache.spark.sql.{DataFrame, Dataset, Encoders, KeyValueGroupedDataset, SparkSession}
 
 import java.sql.Date
 
@@ -121,6 +121,11 @@ object DataSets extends App {
   println(s"Joining guitars and guitar players:")
   playerAndGuitarsDS.show()
 
-  // grouping
+  // grouping, using cars.json data set
+  val carsGroupByOrigin: Dataset[(String, Long)] = carsDS.groupByKey(_.Origin).count()
+  println(s"Number of cars per origin:")
+  carsGroupByOrigin.show()
 
+  // Joins and groups are WIDE transformations, and will involve SHUFFLE operations,
+  // which is costly, so be carefully with joins and groups for performance reasons.
 }
