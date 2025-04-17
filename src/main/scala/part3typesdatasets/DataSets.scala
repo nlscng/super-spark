@@ -99,13 +99,16 @@ object DataSets extends App {
   // 3 equivalent
   carsDS.select(avg(col("Horsepower"))).show()
 
-  // Joins
-  case class Guitar(id: Int, make: String, model: String, guitarType: String)
-  case class GuitarPlayer(id: Int, name: String, guitars: Seq[Int])
-  case class Band(id: Int, name: String, hometown: String, year: Int)
+  // Joins; with "InferSchema" set to true, numeric fields are read as Long, so our case class should use Long for id
+  case class Guitar(id: Long, make: String, model: String, guitarType: String)
+  case class GuitarPlayer(id: Long, name: String, guitars: Seq[Long])
+  case class Band(id: Long, name: String, hometown: String, year: Long)
 
-  val guitarDS = readDF("guitars.json").as[Guitar]
-  val guitarPlayerDS = readDF("guitarPlayers.json").as[GuitarPlayer]
-  val bandDS = readDF("bands.json").as[Band]
+  val guitarsDS = readDF("guitars.json").as[Guitar]
+  val guitarPlayersDS = readDF("guitarPlayers.json").as[GuitarPlayer]
+  val bandsDS = readDF("bands.json").as[Band]
 
+  val guitarPlayerBandsDS = guitarPlayersDS.joinWith(bandsDS, guitarPlayersDS.col("band") === bandsDS.col("id"), "inner")
+  println(s"Guitar Player Bands join:")
+  guitarPlayerBandsDS.show()
 }
