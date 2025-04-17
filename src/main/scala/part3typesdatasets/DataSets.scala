@@ -1,8 +1,7 @@
 package part3typesdatasets
 
-import org.apache.spark.sql.functions.col
+import org.apache.spark.sql.functions.{array_contains, avg, col}
 import org.apache.spark.sql.types.DateType
-import org.apache.spark.sql.functions.avg
 import org.apache.spark.sql.{DataFrame, Dataset, Encoders, SparkSession}
 
 import java.sql.Date
@@ -108,7 +107,20 @@ object DataSets extends App {
   val guitarPlayersDS = readDF("guitarPlayers.json").as[GuitarPlayer]
   val bandsDS = readDF("bands.json").as[Band]
 
-  val guitarPlayerBandsDS = guitarPlayersDS.joinWith(bandsDS, guitarPlayersDS.col("band") === bandsDS.col("id"), "inner")
+  val guitarPlayerBandsDS: Dataset[(GuitarPlayer, Band)] = guitarPlayersDS.joinWith(bandsDS, guitarPlayersDS.col("band") === bandsDS.col("id"), "inner")
   println(s"Guitar Player Bands join:")
+  // you can rename the displayed column names by calling .withColumnRenamed
   guitarPlayerBandsDS.show()
+
+  /**
+   * Exercise
+   * Join the guitarsDS and guitarPlayersDS, in an outer joins
+   * (hint: use array_contains)
+   */
+  val playerAndGuitarsDS = guitarPlayersDS.joinWith(guitarsDS, array_contains(guitarPlayersDS.col("guitars"), guitarsDS.col("id")), "outer")
+  println(s"Joining guitars and guitar players:")
+  playerAndGuitarsDS.show()
+
+  // grouping
+
 }
