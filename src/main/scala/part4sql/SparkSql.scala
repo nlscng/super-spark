@@ -1,4 +1,4 @@
-package park4sql
+package part4sql
 
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.functions._
