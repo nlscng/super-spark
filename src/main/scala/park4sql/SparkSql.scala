@@ -7,6 +7,7 @@ object SparkSql extends App {
   val spark = SparkSession.builder()
     .appName("Spark Sql Practice")
     .config("spark.master", "local")
+    .config("spark.sql.warehouse.dir", "src/main/resources/warehouse")
     .getOrCreate()
 
   val carsDF = spark.read
@@ -26,4 +27,14 @@ object SparkSql extends App {
 
   println(s"American cars df using spark sql:")
   americanCarsDF.show()
+
+  // this will create a spark-warehouse folder from root of the project if
+  // no config was set for spark.sql.warehouse.dir
+  spark.sql("create database rtjvm")
+
+  spark.sql("use rtjvm")
+  val databaseDF = spark.sql("show databases")
+
+  println(s"showing rtjvm database")
+  databaseDF.show()
 }
