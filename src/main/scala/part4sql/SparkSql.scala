@@ -1,7 +1,8 @@
 package part4sql
 
-import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.{SaveMode, SparkSession}
 import org.apache.spark.sql.functions._
+import part2dataframes.Joins.spark
 
 object SparkSql extends App {
   val spark = SparkSession.builder()
@@ -37,4 +38,26 @@ object SparkSql extends App {
 
   println(s"showing rtjvm database")
   databaseDF.show()
+
+  // transfer tables from a DB to spark tables
+  val driver = "org.postgresql.Driver"
+  val url = "jdbc:postgresql://localhost:5432/rtjvm"
+  val user = "docker"
+  val tableName = "public.employees"
+  val password = "docker"
+
+  private def readTable(tableName: String) =
+    spark.read
+      .format("jdbc")
+      .option("driver", driver)
+      .option("url", url)
+      .option("user", user)
+      .option("password", password)
+      .option("dbtable", tableName)
+      .load()
+
+  val employeesDF = readTable("employees")
+  employeesDF.write
+    .mode(SaveMode.Overwrite)
+    .saveAsTable("employees")
 }
