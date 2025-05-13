@@ -32,18 +32,17 @@ object SparkSql extends App {
   // this will create a spark-warehouse folder from root of the project if
   // no config was set for spark.sql.warehouse.dir
   spark.sql("create database rtjvm")
-
   spark.sql("use rtjvm")
   val databaseDF = spark.sql("show databases")
 
   println(s"showing rtjvm database")
-  databaseDF.show()
+  spark.sql("show databases")
+  //databaseDF.show()
 
   // transfer tables from a DB to spark tables
   val driver = "org.postgresql.Driver"
   val url = "jdbc:postgresql://localhost:5432/rtjvm"
   val user = "docker"
-  val tableName = "public.employees"
   val password = "docker"
 
   private def readTable(tableName: String) =
@@ -53,7 +52,7 @@ object SparkSql extends App {
       .option("url", url)
       .option("user", user)
       .option("password", password)
-      .option("dbtable", tableName)
+      .option("dbtable", s"public.$tableName")
       .load()
 
   val employeesDF = readTable("employees")
