@@ -33,7 +33,8 @@ object SparkSql extends App {
   // no config was set for spark.sql.warehouse.dir
   spark.sql("create database rtjvm")
   spark.sql("use rtjvm")
-  val databaseDF = spark.sql("show databases")
+  //val databaseDF = spark.sql("show databases")
+  spark.sql("show databases")
 
   println(s"showing rtjvm database")
   spark.sql("show databases")
@@ -45,6 +46,7 @@ object SparkSql extends App {
   val user = "docker"
   val password = "docker"
 
+  println("migrating table:")
   private def readTable(tableName: String) =
     spark.read
       .format("jdbc")
