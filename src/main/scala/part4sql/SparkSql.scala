@@ -31,14 +31,18 @@ object SparkSql extends App {
 
   // this will create a spark-warehouse folder from root of the project if
   // no config was set for spark.sql.warehouse.dir
-  spark.sql("create database rtjvm")
+  spark.sql("create database rtjvm;")
+
+  spark.sql(
+    """
+      | select exists(select 1 from pg_catalog.pg_database where datname = 'rtjvm')
+      |""".stripMargin)
   spark.sql("use rtjvm")
   //val databaseDF = spark.sql("show databases")
-  spark.sql("show databases")
+  val databaseDF = spark.sql("show databases")
 
   println(s"showing rtjvm database")
-  spark.sql("show databases")
-  //databaseDF.show()
+  databaseDF.show()
 
   // transfer tables from a DB to spark tables
   val driver = "org.postgresql.Driver"
